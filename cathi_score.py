@@ -12,6 +12,7 @@ import argparse
 import math
 import regex as re
 import numpy as np
+from Bio import SeqIO
 
 
 ###
@@ -124,13 +125,9 @@ def calc_max_score_over_windows(seq, penalty, tt_penalty, window, step):
 
 # parse the fasta file and calculate scores, assumes 1 seq per line
 def parse_seqs_from_fasta_max(seq_file, penalty, tt_penalty, win_size, step_size):
-    with open(seq_file, 'r') as sfile:
-        for line in sfile:
-            s = line.strip('\n')
-            if s.startswith('>'):
-                print(s)  # print header
-            else:
-                print(calc_max_score_over_windows(s, penalty, tt_penalty, win_size, step_size))
+    for record in SeqIO.parse(seq_file, 'fasta'):
+        print(record.id)
+        print(calc_max_score_over_windows(str(record.seq), penalty, tt_penalty, win_size, step_size))
 
 
 # calculate score over sliding windows, return all scores
@@ -154,17 +151,13 @@ def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_s
     final_scores = []
 
     # parse fasta, one sequence per line (bedtofasta result default)
-    with open(seq_file, 'r') as sfile:
-        for line in sfile:
-            s = line.strip('\n')
-            if s.startswith('>'):
-                print(s)
-                header = re.split(':|-', s[1:])
-                chrom, start, end = header[0], header[1], header[2]
-            else:
-                scores = calc_score_over_windows(s, chrom=chrom, start=int(start), penalty=penalty,
-                                                 tt_penalty=tt_penalty, window=win_size, step=step_size)
-                final_scores += scores
+    for record in SeqIO.parse(seq_file, 'fasta'):
+        print(record.id)
+        header = re.split(":|-", record.id)
+        chrom, start = header[0][0:3].lower()+header[0][3:], header[1]
+        scores = calc_score_over_windows(str(record.seq), chrom=chrom, start=int(start), penalty=penalty,
+                                     tt_penalty=tt_penalty, window=win_size, step=step_size)
+        final_scores += scores
     return final_scores
 
 
