@@ -9,15 +9,29 @@ By default, penalties are imposed for each occurrence of `GGTGG` or `TT` on the 
 Sequences should be provided in FASTA format, where the header is minimally formatted with the chromosome and genomic coordinates (e.g. `CHR14:778653-778953(-)`). The chromosome and coordinates can be separated by any of the following characters: `:`, `|`, or `-`.
 
 There are two modes:
-1. Calculate the maximum score for the sequence across all windows.
+1. **Calculate the maximum score for the sequence across all windows.**
     - This is the default behavior. 
     - For each sequence in the FASTA file, windows are generated (customized using the window (`-w`) and step size (`-s`) options) and the score is calculated for each window. Only the maximal score for each sequence is returned.
     - The script outputs the header of each sequence followed by the score.
-2. Calculate and return a score for each window.
+
+Sample usage:
+```
+$ python cathi_score.py -w 100 -s 50 -p 1 -t 0 chr14.fa
+```
+This will calculate the max score for each sequence using a window size of 100bp, a step size of 50bp, a `GGTGG` penalty of 1, and a `TT` penalty of 0.
+
+2. **Calculate and return a score for each window within each sequence.**
     - This mode is accessed using the `--signal` option.
     - For each sequence in the FASTA file, windows are generated (customized using the window (`-w`) and step size (`-s`) options) and the score is calculated for each window. The score for each window is returned.
     - A lower bound can be placed on the score by using the `--thresh` option. Only scores with a value >= the threshold will be returned. By default, the threshold is 0.
     - The output is provided in a four-column `bedgraph` format. The columns are `[chrom] [start] [end] [score]`, where the genomic coordinates represent the beginning and end of the window. The first line is the header of the sequence (preceded by a `#`).
+
+Sample usage:
+```
+$ python cathi_score.py -w 100 --signal --thresh 20 chr14.fa
+```
+This will calculate the score for each sequence and window using a window size of 100bp, default step size, default penalties, and a threshold of 20. All windows returned will have a score of at least 20. If multiple sequences occur in the input file, output will be separated by a header line (e.g. `CHR14:778653-778953(-)`).
+
 
 ### Dependencies
 This script requres [Biopython](https://biopython.org) and [NumPy](https://numpy.org). These can be easily installed using Anaconda.
