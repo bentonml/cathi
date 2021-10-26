@@ -1,5 +1,5 @@
 # CATHI
-Implementation of the CATHI algorithm for identifying siRTAs.
+Implementation of the CATHI algorithm for identifying SiRTAs.
 
 ### Algorithm
 This approach scores genomic sequences by counting strings of 4 or more nucleotides containing only consecutive `G` or `T`. While the `T`s must be single, there can be multiple `G`s in a row. However, strings may not consist of only `G`s. 
