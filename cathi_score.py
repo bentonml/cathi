@@ -147,18 +147,17 @@ def calc_score_over_windows(seq, chrom, start, penalty, tt_penalty, window, step
 
 
 # parse the fasta file and calculate scores, assumes 1 seq per line
-def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_size):
+def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_size, thresh):
     final_scores = []
 
     # parse fasta, one sequence per line (bedtofasta result default)
     for record in SeqIO.parse(seq_file, 'fasta'):
-        print(record.id)
+        print(f'#{record.id}')
         header = re.split(":|-", record.id)
         chrom, start = header[0][0:3].lower()+header[0][3:], header[1]
         scores = calc_score_over_windows(str(record.seq), chrom=chrom, start=int(start), penalty=penalty,
                                      tt_penalty=tt_penalty, window=win_size, step=step_size)
-        final_scores += scores
-    return final_scores
+        signal_to_bedgraph(scores, thresh)
 
 
 def signal_to_bedgraph(signals, threshold):
@@ -182,8 +181,8 @@ def main():
 
     # parse fasta and calculate score
     if SIGNAL:
-        s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP)
-        signal_to_bedgraph(s, THRESH)
+        s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP, THRESH)
+        # signal_to_bedgraph(s, THRESH)
     else:
         parse_seqs_from_fasta_max(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP)
 
