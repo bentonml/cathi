@@ -29,9 +29,10 @@ arg_parser.add_argument("-w", "--window", type=int, default=100,
 arg_parser.add_argument("-s", "--step", type=int, default=1,
                         help='step size for sliding windows; default=1bp')
 arg_parser.add_argument('--signal', dest='signal', action='store_true', default=False,
-                    help='flag to print signal output instead of max score')
+                        help='flag to print signal output instead of max score')
+arg_parser.add_argument('--thresh', type=float, default=0.0,
+                        help='when used with --signal, only return scores above this value; default=0')
 
-args = arg_parser.parse_args()
 
 ###
 # functions
@@ -159,13 +160,16 @@ def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_s
     return final_scores
 
 
-def signal_to_bedgraph(signals):
+def signal_to_bedgraph(signals, threshold):
     for s in signals:
-        print(f'{s[0]}\t{s[1]}\t{s[2]}\t{s[3]}')
+        if s[3] >= threshold:
+            print(f'{s[0]}\t{s[1]}\t{s[2]}\t{s[3]}')
 
 
 # main function
 def main():
+    args = arg_parser.parse_args()
+
     # save parameters
     SIRTA_FILE = args.sequence_file
     PENALTY = args.penalty
@@ -173,11 +177,12 @@ def main():
     WINDOW = args.window
     STEP = args.step
     SIGNAL = args.signal
+    THRESH = args.thresh
 
     # parse fasta and calculate score
     if SIGNAL:
         s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP)
-        signal_to_bedgraph(s)
+        signal_to_bedgraph(s, THRESH)
     else:
         parse_seqs_from_fasta_max(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP)
 
