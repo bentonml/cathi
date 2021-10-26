@@ -17,7 +17,7 @@ There are two modes:
     - This mode is accessed using the `--signal` option.
     - For each sequence in the FASTA file, windows are generated (customized using the window (`-w`) and step size (`-s`) options) and the score is calculated for each window. The score for each window is returned.
     - A lower bound can be placed on the score by using the `--thresh` option. Only scores with a value >= the threshold will be returned. By default, the threshold is 0.
-    - The output is provided in a four-column `bedgraph` format. The columns are `[chrom] [start] [end] [score]`, where the genomic coordinates represent the beginning and end of the window. The first line is the header of the sequences (preceded by a `#`).
+    - The output is provided in a four-column `bedgraph` format. The columns are `[chrom] [start] [end] [score]`, where the genomic coordinates represent the beginning and end of the window. The first line is the header of the sequence (preceded by a `#`).
 
 ### Dependencies
 This script requres [Biopython](https://biopython.org) and [NumPy](https://numpy.org). These can be easily installed using Anaconda.
