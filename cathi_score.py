@@ -37,6 +37,15 @@ arg_parser.add_argument('--thresh', type=float, default=0.0,
 ###
 # functions
 ###
+# test the match to rule out sequences of all gs
+def all_gs(seq):
+    c = seq[0]
+    for s in seq:
+        if s != c:
+            return False
+    return True
+
+
 # test the candidate sequence to ensure that it has no internal TT
 def test_candidate(c):
     result = []
@@ -55,16 +64,17 @@ def find_tg_kmers(seq):
     kmers, pos = [], []
 
     for match in re.finditer(r'(?!TT)([GT]{4,})', seq):
-        ks = test_candidate(seq[match.start():match.end()])
-        for k in ks:
-            if k != "":
-                kmers.append(k)
-                if match.end() - match.start() == len(k):
-                    pos.append((match.start(), match.end()))
-                else:
-                    offset = re.search(k, seq[match.start():match.end()]).start()
-                    new_start = match.start()+offset
-                    pos.append((new_start, new_start+len(k)))
+        if not all_gs(seq[match.start():match.end()]):
+            ks = test_candidate(seq[match.start():match.end()])
+            for k in ks:
+                if k != "":
+                    kmers.append(k)
+                    if match.end() - match.start() == len(k):
+                        pos.append((match.start(), match.end()))
+                    else:
+                        offset = re.search(k, seq[match.start():match.end()]).start()
+                        new_start = match.start()+offset
+                        pos.append((new_start, new_start+len(k)))
     return kmers, pos
 
 
@@ -109,7 +119,6 @@ def calc_max_score_over_windows(seq, penalty, tt_penalty, window, step):
             max_score = score
         elif score > max_score:
             max_score = score
-            fin_groups = groups
     return max_score
 
 
@@ -136,7 +145,6 @@ def calc_score_over_windows(seq, chrom, start, penalty, tt_penalty, window, step
         # calculate score
         groups, pos = find_tg_kmers(seq[i:i+window])
         score = score_groups(groups) - calculate_penalty(groups, penalty, tt_penalty, pos, seq[i:i+window])
-
         scores.append([chrom, start+i, start+i+seq_len, score])
     return scores
 
