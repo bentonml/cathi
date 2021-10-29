@@ -33,6 +33,8 @@ arg_parser.add_argument('--signal', dest='signal', action='store_true', default=
                         help='flag to print signal output instead of max score')
 arg_parser.add_argument('--thresh', type=float, default=0.0,
                         help='when used with --signal, only return scores above this value; default=0')
+arg_parser.add_argument('--strand', dest='strand', type=str, default='+', choices=['+', '-'],
+                        help='flag to specify strand with --signal; default +')
 
 
 ###
@@ -131,7 +133,7 @@ def parse_seqs_from_fasta_max(seq_file, penalty, tt_penalty, win_size, step_size
 
 
 # calculate score over sliding windows, return all scores
-def calc_score_over_windows(seq, chrom, start, penalty, tt_penalty, window, step):
+def calc_score_over_windows(seq, chrom, start, penalty, tt_penalty, window, step, strand):
     num_windows = math.ceil(((len(seq)-window)/step)+1)
     scores = []
 
@@ -142,12 +144,15 @@ def calc_score_over_windows(seq, chrom, start, penalty, tt_penalty, window, step
         # calculate score
         groups, pos = find_tg_kmers(seq[i:i+window])
         score = score_groups(groups) - calculate_penalty(groups, penalty, tt_penalty, pos, seq[i:i+window])
-        scores.append([chrom, start+i, start+i+seq_len, score])
+        if strand == '+':
+            scores.append([chrom, start+i, start+i+seq_len, score])
+        else:
+            scores.append([chrom, start-i-seq_len, start-i, score])
     return scores
 
 
 # parse the fasta file and calculate scores, assumes 1 seq per line
-def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_size, thresh):
+def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_size, thresh, strand):
     final_scores = []
 
     # parse fasta, one sequence per line (bedtofasta result default)
@@ -156,7 +161,7 @@ def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_s
         header = re.split(":|-", record.id)
         chrom, start = header[0][0:3].lower()+header[0][3:], header[1]
         scores = calc_score_over_windows(str(record.seq), chrom=chrom, start=int(start), penalty=penalty,
-                                     tt_penalty=tt_penalty, window=win_size, step=step_size)
+                                         tt_penalty=tt_penalty, window=win_size, step=step_size, strand=strand)
         signal_to_bedgraph(scores, thresh)
 
 
@@ -178,11 +183,12 @@ def main():
     STEP = args.step
     SIGNAL = args.signal
     THRESH = args.thresh
+    STRAND = args.strand
 
     # parse fasta and calculate score
     if SIGNAL:
-        s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP, THRESH)
-        # signal_to_bedgraph(s, THRESH)
+        s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY,
+                                         WINDOW, STEP, THRESH, STRAND)
     else:
         parse_seqs_from_fasta_max(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP)
 
