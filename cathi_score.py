@@ -62,12 +62,12 @@ def test_candidate(c):
 
 
 # find all strings of 4 or more nucleotides containing only consecutive G/T
-# Ts must be single, Gs can be 1, 2, or 3 consecutive nucleotides
+# must start with a G, Ts must be single, Gs can be 1, 2, or 3 consecutive nt
 def find_tg_kmers(seq):
     kmers, pos = [], []
 
-    for match in re.finditer(r'(?!TT)([GT]{4,})', seq):
-        if not all_gs(seq[match.start():match.end()]):
+    for match in re.finditer(r'(G[GT]{3,})', seq):
+        if not all_gs(seq[match.start():match.end()]) and not all_ggtgg(seq[match.start():match.end()]):
             ks = test_candidate(seq[match.start():match.end()])
             for k in ks:
                 if k != "":
@@ -97,9 +97,6 @@ def calculate_penalty(seq_groups, p, tp, pos, seq):
 
     # flanking TT penalty (could be optimized)
     for start, end in pos:
-        if start-1 >= 0:
-            if seq[start] == "T" and seq[start-1] == "T":
-                penalty_sum += tp
         if end < len(seq):
             if seq[end] == "T" and seq[end-1] == "T":
                     penalty_sum += tp
