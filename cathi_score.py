@@ -48,6 +48,16 @@ def all_gs(seq):
             return False
     return True
 
+# test the match to rule out sequences of all ggtgg or gtggtgg alone
+def all_ggtgg(seq):
+    res = False
+    match = re.search(r"((?:GGT){2,})", seq)
+    if seq == 'GGTGG' or seq == 'GTGGTGG':
+        res = True
+    elif match:
+        if match.group(1) == seq:
+            res = True
+    return res
 
 # test the candidate sequence to ensure that it has no internal TT
 def test_candidate(c):
