@@ -62,4 +62,5 @@ optional arguments:
   -s STEP, --step STEP  step size for sliding windows; default=1bp
   --signal              flag to print signal output instead of max score
   --thresh THRESH       when used with --signal, only return scores above this value; default=0
+  --strand {+,-}        flag to specify strand with --signal; default +
 ```
