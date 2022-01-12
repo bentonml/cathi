@@ -2,7 +2,7 @@
 Implementation of the CATHI algorithm for identifying SiRTAs.
 
 ### Algorithm
-This approach scores genomic sequences by counting strings of 4 or more nucleotides containing only consecutive `G` or `T`. While the `T`s must be single, there can be multiple `G`s in a row. However, strings may not consist of only `G`s.
+This approach scores genomic sequences by counting strings of 4 or more nucleotides containing only consecutive `G` or `T`. The sequence must always start with a `G`, and, while the `T`s must be single, there can be multiple `G`s in a row. Strings may not consist of only `G`s, only `GGTGG` (and expansions, e.g. `GGTGGTGG`), or only `GTGGTGG`.
 
 By default, penalties are imposed for each occurrence of `GGTGG` or `TT` on the edges of a match. The default penalty is 1, but these can be changed by using the `-p`/`--penalty` option for `GGTGG` and the `-t`/`--ttpenalty` option for `TT`.
 
