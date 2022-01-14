@@ -40,19 +40,19 @@ arg_parser.add_argument('--strand', dest='strand', type=str, default='+', choice
 ###
 # functions
 ###
-# test the match to rule out sequences of all gs
-def all_gs(seq):
-    c = seq[0]
-    for s in seq:
-        if s != c:
-            return False
-    return True
+# test the match to rule out sequences with strings of 4+ gs (including all gs)
+def contains_gt4_gs(seq):
+    # check for 4+ Gs
+    match = re.search(r"GGGG+", seq)
+    if match is not None:
+        return True
+    return False
 
 # test the match to rule out sequences of all ggtgg or gtggtgg alone
 def all_ggtgg(seq):
     res = False
-    match = re.search(r"((?:GGT){2,})", seq)
-    if seq == 'GGTGG' or seq == 'GTGGTGG':
+    match = re.search(r"((?:GGT){2,}G?)", seq)
+    if seq == 'GGTGG' or re.match(r"GTGGTGGT?$", seq):
         res = True
     elif match:
         if match.group(1) == seq:
@@ -63,8 +63,11 @@ def all_ggtgg(seq):
 def test_candidate(c):
     result = []
     tt_pos = [s.start(0) for s in re.finditer(r"TT", c)]
-    if len(tt_pos) == 0 and len(c) >= 4:
-        result.append(c)
+    if len(tt_pos) == 0 and len(c) >= 4 and c[0] != 'T':
+        if not all_ggtgg(c):
+            result.append(c)
+    elif len(tt_pos) == 0 and len(c) >= 4 and c[0] == 'T':
+        result += test_candidate(c[1:])
     elif len(c) > 4:
         result += test_candidate(c[0:tt_pos[0]+1])
         result += test_candidate(c[tt_pos[0]+1:])
@@ -77,7 +80,7 @@ def find_tg_kmers(seq):
     kmers, pos = [], []
 
     for match in re.finditer(r'(G[GT]{3,})', seq):
-        if not all_gs(seq[match.start():match.end()]) and not all_ggtgg(seq[match.start():match.end()]):
+        if not contains_gt4_gs(seq[match.start():match.end()]) and not all_ggtgg(seq[match.start():match.end()]):
             ks = test_candidate(seq[match.start():match.end()])
             for k in ks:
                 if k != "":
