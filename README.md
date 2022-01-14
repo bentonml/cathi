@@ -2,9 +2,9 @@
 Implementation of the CATHI algorithm for identifying SiRTAs.
 
 ### Algorithm
-This approach scores genomic sequences by counting strings of 4 or more nucleotides containing only consecutive `G` or `T`. The sequence must always start with a `G`, and, while the `T`s must be single, there can be multiple `G`s in a row. Strings may not consist of only `G`s, only `GGTGG` (and expansions, e.g. `GGTGGTGG`), or only `GTGGTGG`.
+This approach scores genomic sequences by counting strings of 4 or more nucleotides containing only consecutive `G` or `T`. The sequence must always start with a `G`, and, while the `T`s must be single, there can be multiple `G`s in a row (up to 3). Strings may not consist of only `G`s, only `GGTGG` (and expansions, e.g. `GGTGGTGG`), or only `GTGGTGG`.
 
-By default, penalties are imposed for each occurrence of `GGTGG` or `TT` on the edges of a match. The default penalty is 1, but these can be changed by using the `-p`/`--penalty` option for `GGTGG` and the `-t`/`--ttpenalty` option for `TT`.
+Penalties may be imposed for each occurrence of `GGTGG` or for a `TT` on the edge of a match (front or back). There are no penalties applied by default, but this can be changed by using the `-p`/`--penalty` option for `GGTGG` and the `-t`/`--ttpenalty` option for `TT`.
 
 Sequences should be provided in FASTA format, where the header is minimally formatted with the chromosome and genomic coordinates (e.g. `CHR14:778653-778953 (-)`). The chromosome and coordinates can be separated by any of the following characters: `:`, `|`, or `-`.
 
@@ -54,9 +54,9 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -p PENALTY, --penalty PENALTY
-                        penalty to apply for each GGTGG occurence; default=1
+                        penalty to apply for each GGTGG occurence; default=0
   -t TTPENALTY, --ttpenalty TTPENALTY
-                        penalty to apply for each flanking TT occurence; default=1
+                        penalty to apply for each flanking TT occurence; default=0
   -w WINDOW, --window WINDOW
                         sliding window size; default=100bp
   -s STEP, --step STEP  step size for sliding windows; default=1bp
