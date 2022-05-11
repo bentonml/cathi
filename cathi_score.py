@@ -21,9 +21,9 @@ from Bio import SeqIO
 arg_parser = argparse.ArgumentParser(description="Calculate SiRTA score for sequence.")
 
 arg_parser.add_argument("sequence_file", help='FASTA file of putative SiRTA sequences')
-arg_parser.add_argument("-p", "--penalty", type=int, default=0,
+arg_parser.add_argument("-p", "--penalty", type=float, default=0,
                         help='penalty to apply for each GGTGG occurence; default=0')
-arg_parser.add_argument("-t", "--ttpenalty", type=int, default=0,
+arg_parser.add_argument("-t", "--ttpenalty", type=float, default=0,
                         help='penalty to apply for each flanking TT occurence; default=0')
 arg_parser.add_argument("-w", "--window", type=int, default=100,
                         help='sliding window size; default=100bp')
