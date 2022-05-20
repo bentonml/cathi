@@ -29,6 +29,8 @@ arg_parser.add_argument("-w", "--window", type=int, default=100,
                         help='sliding window size; default=100bp')
 arg_parser.add_argument("-s", "--step", type=int, default=1,
                         help='step size for sliding windows; default=1bp')
+arg_parser.add_argument("-b", "--bedformat", dest='bed_format', action='store_true', default=False,
+                        help='print max score for seq (across windows) with location in BED format; default=False')
 arg_parser.add_argument('--signal', dest='signal', action='store_true', default=False,
                         help='flag to print signal output instead of max score')
 arg_parser.add_argument('--thresh', type=float, default=0.0,
@@ -136,10 +138,15 @@ def calc_max_score_over_windows(seq, penalty, tt_penalty, window, step):
 
 
 # parse the fasta file and calculate scores, assumes 1 seq per line
-def parse_seqs_from_fasta_max(seq_file, penalty, tt_penalty, win_size, step_size):
+def parse_seqs_from_fasta_max(seq_file, penalty, tt_penalty, win_size, step_size, bed_format):
     for record in SeqIO.parse(seq_file, 'fasta'):
-        print(record.id)
-        print(calc_max_score_over_windows(str(record.seq), penalty, tt_penalty, win_size, step_size))
+        max_score = calc_max_score_over_windows(str(record.seq), penalty, tt_penalty, win_size, step_size)
+        if bed_format:
+            header = re.split(":|-", record.id)
+            chrom, start = header[0][0:3].lower()+header[0][3:], int(header[1])
+            print(f'{chrom}\t{start}\t{start+len(record.seq)}\t{max_score}')
+        else:
+            print(f'{record.id}\n{max_score}')
 
 
 # calculate score over sliding windows, return all scores
@@ -194,13 +201,14 @@ def main():
     SIGNAL = args.signal
     THRESH = args.thresh
     STRAND = args.strand
+    BED_FORMAT = args.bed_format
 
     # parse fasta and calculate score
     if SIGNAL:
         s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY,
                                          WINDOW, STEP, THRESH, STRAND)
     else:
-        parse_seqs_from_fasta_max(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP)
+        parse_seqs_from_fasta_max(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP, BED_FORMAT)
 
 
 ###
