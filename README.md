@@ -12,7 +12,7 @@ There are two modes:
 1. **Calculate the maximum score for the sequence across all windows.**
     - This is the default behavior.
     - For each sequence in the FASTA file, windows are generated (customized using the window (`-w`) and step size (`-s`) options) and the score is calculated for each window. Only the maximal score for each sequence is returned.
-    - The script outputs the header of each sequence followed by the score.
+    - By default, the script outputs the header of each sequence followed by the score. If you prefer BED formatted output, use the `-b` or `--bedformat` option to print the location followed by the maximal score for each sequence. (This option assumes the header contains minimally formatted with the chromosome name and start coordinate: e.g., `CHR14:778653` or `14-268677`).
 
 Sample usage:
 ```
@@ -60,6 +60,7 @@ optional arguments:
   -w WINDOW, --window WINDOW
                         sliding window size; default=100bp
   -s STEP, --step STEP  step size for sliding windows; default=1bp
+  -b, --bedformat       print max score for seq (across windows) with location in BED format; default=False
   --signal              flag to print signal output instead of max score
   --thresh THRESH       when used with --signal, only return scores above this value; default=0
   --strand {+,-}        flag to specify strand with --signal; default +
