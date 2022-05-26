@@ -31,7 +31,7 @@ arg_parser.add_argument("-w", "--window", type=int, default=100,
                         help='sliding window size; default=100bp')
 arg_parser.add_argument("-s", "--step", type=int, default=1,
                         help='step size for sliding windows; default=1bp')
-arg_parser.add_argument("-b", "--bedformat", dest='bed_format', action='store_true', default=False,
+arg_parser.add_argument("--bedformat", dest='bed_format', action='store_true', default=False,
                         help='print max score for seq (across windows) with location in BED format; default=False')
 arg_parser.add_argument('--signal', dest='signal', action='store_true', default=False,
                         help='flag to print signal output instead of max score')
