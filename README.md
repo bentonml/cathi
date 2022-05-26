@@ -12,7 +12,7 @@ There are two modes:
 1. **Calculate the maximum score for the sequence across all windows.**
     - This is the default behavior.
     - For each sequence in the FASTA file, windows are generated (customized using the window (`-w`) and step size (`-s`) options) and the score is calculated for each window. Only the maximal score for each sequence is returned.
-    - By default, the script outputs the header of each sequence followed by the score. If you prefer BED formatted output, use the `-b` or `--bedformat` option to print the location followed by the maximal score for each sequence. (This option assumes the header contains minimally formatted with the chromosome name and start coordinate: e.g., `CHR14:778653` or `14-268677`).
+    - By default, the script outputs the header of each sequence followed by the score. If you prefer BED formatted output, use the `--bedformat` option to print the location followed by the maximal score for each sequence. (This option assumes the header contains minimally formatted with the chromosome name and start coordinate: e.g., `CHR14:778653` or `14-268677`).
 
 Sample usage:
 ```
@@ -26,6 +26,7 @@ This will calculate the max score for each sequence using a window size of 100bp
     - A lower bound can be placed on the score by using the `--thresh` option. Only scores with a value >= the threshold will be returned. By default, the threshold is 0.
     - The strand of the sequence can be provided using the `--strand` option with either `+` or `-`. This will determine the value of the genomic coordinates returned. The default is `+`.
     - The output is provided in a four-column `bedgraph` format. The columns are `[chrom] [start] [end] [score]`, where the genomic coordinates represent the beginning and end of the window. The first line is the header of the sequence (preceded by a `#`).
+    - If you would like to merge any overlapping coordinates in the output `bedgraph`, use the `--cluster` option. This will merge all overlapping (and directly adjacent) windows into a single region where the beginning is the start coordinate of the most upstream window and the ending is end coordinate of the most downstream window. The score is the maximum CATHI value across all merged windows.
 
 Sample usage:
 ```
@@ -35,16 +36,17 @@ This will calculate the score for each sequence and window using a window size o
 
 
 ### Dependencies
-This script requres [Biopython](https://biopython.org) and [NumPy](https://numpy.org). These can be easily installed using Anaconda.
+This script requres several common biocomputing packages: [Biopython](https://biopython.org),  [NumPy](https://numpy.org), [Pandas](https://pandas.pydata.org), and [pybedtools](https://daler.github.io/pybedtools/index.html#). These can be easily installed using Anaconda.
 
 ```
-conda install numpy
+conda install numpy pandas pybedtools
 conda install -c conda-forge biopython
 ```
 
 ### Usage
 ```
-usage: cathi_score.py [-h] [-p PENALTY] [-t TTPENALTY] [-w WINDOW] [-s STEP] [--signal] [--thresh THRESH] sequence_file
+usage: cathi_score.py [-h] [-p PENALTY] [-t TTPENALTY] [-w WINDOW] [-s STEP] [--bedformat] [--signal]
+                      [--thresh THRESH] [--strand {+,-}] [--cluster] sequence_file
 
 Calculate SiRTA score for sequence.
 
@@ -60,8 +62,9 @@ optional arguments:
   -w WINDOW, --window WINDOW
                         sliding window size; default=100bp
   -s STEP, --step STEP  step size for sliding windows; default=1bp
-  -b, --bedformat       print max score for seq (across windows) with location in BED format; default=False
+  --bedformat           print max score for seq (across windows) with location in BED format; default=False
   --signal              flag to print signal output instead of max score
   --thresh THRESH       when used with --signal, only return scores above this value; default=0
-  --strand {+,-}        flag to specify strand with --signal; default +
+  --strand {+,-}        flag to specify strand with --signal; default=+
+  --cluster             flag to merge overlapping windows in output in --signal mode; default=Fals
 ```
