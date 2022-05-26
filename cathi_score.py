@@ -12,7 +12,9 @@ import argparse
 import math
 import regex as re
 import numpy as np
+import pandas as pd
 from Bio import SeqIO
+from pybedtools import BedTool
 
 
 ###
@@ -36,7 +38,9 @@ arg_parser.add_argument('--signal', dest='signal', action='store_true', default=
 arg_parser.add_argument('--thresh', type=float, default=0.0,
                         help='when used with --signal, only return scores above this value; default=0')
 arg_parser.add_argument('--strand', dest='strand', type=str, default='+', choices=['+', '-'],
-                        help='flag to specify strand with --signal; default +')
+                        help='flag to specify strand with --signal; default=+')
+arg_parser.add_argument('--cluster', dest='cluster', action='store_true', default=False,
+                        help='flag to merge overlapping windows in output in --signal mode; default=False')
 
 
 ###
@@ -50,6 +54,7 @@ def contains_gt4_gs(seq):
         return True
     return False
 
+
 # test the match to rule out sequences of all ggtgg or gtggtgg alone
 def all_ggtgg(seq):
     res = False
@@ -60,6 +65,7 @@ def all_ggtgg(seq):
         if match.group(1) == seq:
             res = True
     return res
+
 
 # test the candidate sequence to ensure that it has no internal TT
 def test_candidate(c):
@@ -168,8 +174,22 @@ def calc_score_over_windows(seq, chrom, start, penalty, tt_penalty, window, step
     return scores
 
 
+# merge overlapping signal regions into single bedgraph line (4 col, tsv)
+def signal_to_merged_bedgraph(signals, threshold):
+    df = (pd.DataFrame(signals, columns=['chrom', 'start', 'end', 'score'])
+            .query(f'score >= {threshold}'))
+    print(BedTool.from_dataframe(df).sort().merge(c=4, o='max'), end='')
+
+
+# print signal in bedgraph format (4 col, tsv)
+def signal_to_bedgraph(signals, threshold):
+    for s in signals:
+        if s[3] >= threshold:
+            print(f'{s[0]}\t{s[1]}\t{s[2]}\t{s[3]}')
+
+
 # parse the fasta file and calculate scores, assumes 1 seq per line
-def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_size, thresh, strand):
+def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_size, thresh, strand, cluster_output):
     final_scores = []
 
     # parse fasta, one sequence per line (bedtofasta result default)
@@ -179,13 +199,10 @@ def parse_seqs_from_fasta_signal(seq_file, penalty, tt_penalty, win_size, step_s
         chrom, start = header[0][0:3].lower()+header[0][3:], header[1]
         scores = calc_score_over_windows(str(record.seq), chrom=chrom, start=int(start), penalty=penalty,
                                          tt_penalty=tt_penalty, window=win_size, step=step_size, strand=strand)
-        signal_to_bedgraph(scores, thresh)
-
-
-def signal_to_bedgraph(signals, threshold):
-    for s in signals:
-        if s[3] >= threshold:
-            print(f'{s[0]}\t{s[1]}\t{s[2]}\t{s[3]}')
+        if cluster_output:
+            signal_to_merged_bedgraph(scores, thresh)
+        else:
+            signal_to_bedgraph(scores, thresh)
 
 
 # main function
@@ -202,11 +219,11 @@ def main():
     THRESH = args.thresh
     STRAND = args.strand
     BED_FORMAT = args.bed_format
+    CLUSTER = args.cluster
 
     # parse fasta and calculate score
     if SIGNAL:
-        s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY,
-                                         WINDOW, STEP, THRESH, STRAND)
+        s = parse_seqs_from_fasta_signal(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP, THRESH, STRAND, CLUSTER)
     else:
         parse_seqs_from_fasta_max(SIRTA_FILE, PENALTY, TT_PENALTY, WINDOW, STEP, BED_FORMAT)
 
@@ -216,3 +233,4 @@ def main():
 ###
 if __name__ == '__main__':
     main()
+
