@@ -36,12 +36,14 @@ This will calculate the score for each sequence and window using a window size o
 
 
 ### Dependencies
-This script requres several common biocomputing packages: [Biopython](https://biopython.org),  [NumPy](https://numpy.org), [Pandas](https://pandas.pydata.org), and [pybedtools](https://daler.github.io/pybedtools/index.html#). These can be easily installed using Anaconda.
+This script requres several common biocomputing packages: [Biopython](https://biopython.org),  [NumPy](https://numpy.org), [Pandas](https://pandas.pydata.org), and [pybedtools](https://daler.github.io/pybedtools/index.html#). These can be easily installed using Anaconda. 
 
 ```
-conda install numpy pandas pybedtools
+conda install numpy pandas regex
 conda install -c conda-forge biopython
+conda install -c conda-forge -c bioconda pybedtools
 ```
+Please see the links for more detailed installation instructions for each package (including `pip` and installation from source).
 
 ### Usage
 ```
